@@ -1,5 +1,21 @@
 import json
 import time
+from riotwatcher import Riotwatcher
+from riotwatcher import EUROPE_WEST
+from riotwatcher import EUROPE_NORDIC_EAST
+from riotwatcher import KOREA
+from riotwatcher import OCEANIA
+from riotwatcher import BRAZIL
+from riotwatcher import LATIN_AMERICA_SOUTH
+from riotwatcher import LATIN_AMERICA_NORTH
+from riotwatcher import NORTH_AMERICA
+from riotwatcher import RUSSIA
+from riotwatcher import TURKEY
+from twitch import *
+
+
+riot = RiotWatcher('24d89b10-e6ee-469a-91bd-f5e2d15c9e31')
+
 
 cacheFile = open("cacheDatabase.json")
 cacheData = json.load(cacheFile)
@@ -86,7 +102,7 @@ def updateSummoner(name,info):
 #returns {} if no ifo exists, or if the data is marked as stale
 def getChampionInfo(name):
 	if name in cacheData["champions"] and cacheData["champions"][name]["stale"] == False:
-		return cacheData["champions"][name]["info"]
+		return riot.get_all_champions()#cacheData["champions"][name]["info"]
 	else:
 		return {}
 
@@ -163,5 +179,5 @@ def test():
 	saveCache()
 
 trimCache()
-#don;t uncomment this unless you want to reset the database
+#don't uncomment this unless you want to reset the database
 #setupDatabase()
