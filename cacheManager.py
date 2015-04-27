@@ -82,6 +82,34 @@ def updateSummoner(name,info):
 		cacheData["summoners"][name]["stale"] = False
 	saveCache()
 
+#get basic data
+#returns {} if no ifo exists, or if the data is marked as stale
+def getChampionInfo(name):
+	if name in cacheData["champions"] and cacheData["champions"][name]["stale"] == False:
+		return cacheData["champions"][name]["info"]
+	else:
+		return {}
+
+def getSummonerInfo(name):
+	if name in cacheData["summoners"] and cacheData["summoners"][name]["stale"] == False:
+		return cacheData["summoners"][name]["info"]
+	else:
+		return {}
+
+def getNewsInfo(name):
+	if name in cacheData["news"] and cacheData["news"][name]["stale"] == False:
+		return cacheData["news"][name]["info"]
+	else:
+		return {}
+
+def getStreamerInfo(name):
+	if name in cacheData["streamers"] and cacheData["streamers"][name]["stale"] == False:
+		return cacheData["streamers"][name]["info"]
+	else:
+		return {}
+
+
+#trim the database, mark items as stale
 def trimCache():
 	prunableSummonerKeys = []
 	prunableStreamerKeys = []
