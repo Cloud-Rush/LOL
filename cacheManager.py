@@ -1,7 +1,9 @@
+import requests
+
 import json
 import time
 import praw
-from riotwatcher import Riotwatcher
+from riotwatcher import RiotWatcher
 from riotwatcher import EUROPE_WEST
 from riotwatcher import EUROPE_NORDIC_EAST
 from riotwatcher import KOREA
@@ -18,11 +20,10 @@ from twitch import *
 riot = RiotWatcher('24d89b10-e6ee-469a-91bd-f5e2d15c9e31')
 twitch = TwitchTV()
 reddit = praw.Reddit(user_agent = 'TheFountain by /u/tstarrs')
-submissions = reddit.get_subreddit('leagueoflegends').get_top(limit = 10)
-submissions2 = reddit.get_subreddit('summonerschool').get_top(limit = 10)
-submissions3 = reddit.get_subreddit('loleventvods').get_top(limit = 10)
-allSubmissions = (submissions + submissions2 + submissions3)
-
+#submissions = reddit.get_subreddit('leagueoflegends').get_top(limit = 10)
+#submissions2 = reddit.get_subreddit('summonerschool').get_top(limit = 10)
+#submissions3 = reddit.get_subreddit('loleventvods').get_top(limit = 10)
+#allSubmissions = (submissions + submissions2 + submissions3)
 cacheFile = open("cacheDatabase.json")
 cacheData = json.load(cacheFile)
 cacheFile.close()
@@ -34,7 +35,7 @@ SUMMONER_TOLERANCE = 3600000 #1 hour
 
 
 #used for setupDatabase
-def saveCache(saveData):
+def saveCacheDef(saveData):
 	saveFile = open("cacheDatabase.json","w")
 	json.dump(saveData,saveFile)
 	saveFile.close()
@@ -44,15 +45,56 @@ def saveCache():
 	json.dump(cacheData,saveFile)
 	saveFile.close()
 
+
+def extractSummoner(sumName):
+	summer = riot.get_summoner(name=sumName)
+	sumnum = summer['id']
+	statsList = (riot.get_ranked_stats(sumnum))['champions']
+	stats = None
+	for entry in statsList:
+		if entry['id'] == 0:
+			stats = entry['stats']
+	infor = {}
+	infor['rankedGames'] = stats['totalSessionsPlayed']
+	infor['pentakills'] = stats['totalPentaKills']
+	if infor['rankedGames'] != 0:
+		infor['goldPerGame'] = stats['totalGoldEarned'] / infor['rankedGames']
+	else:
+		infor['goldPerGame'] = 0
+	objy = riot.get_league_entry(summoner_ids=[sumnum])
+	infor['league'] = objy[str(sumnum)][0]['tier'] + " " + objy[str(sumnum)][0]['entries'][0]['division']
+	updateSummoner(sumName,infor)
+
+def extractStreams():
+	infor = twitch.getGameStreams("League of Legends")
+	for key in infor:
+		updateStreamer(key['channel']['name'],key)
+
+def extractRedditData():
+	submissions = reddit.get_subreddit('leagueoflegends').get_top(limit = 10)
+	submissions2 = reddit.get_subreddit('summonerschool').get_top(limit = 10)
+	submissions3 = reddit.get_subreddit('loleventvods').get_top(limit = 10)
+	lolred = []
+	for x in submissions:
+		lolred.append(str(x))
+	updateNews('leagueoflegends',lolred)
+	ssred = []
+	for x in submissions2:
+		ssred.append(str(x))
+	updateNews('summonerschool',ssred)
+	vred = []
+	for x in submissions3:
+		vred.append(str(x))
+	updateNews('loleventvods',vred)
 #used for starting a database from scratch
 #this will reset the database
 def setupDatabase():
 	initData = {}
-	initData["champions"] = {riot.get_all_champions()}
-	initData["news"] = {allSubmissions}
+	initData["champions"] = {}#{riot.get_all_champions()}
+	initData["news"] = {}#{allSubmissions}
 	initData["summoners"] = {}
-	initData["streamers"] = {twitch.getGameStreams("League of Legends")}
-	saveCache(initData)
+	initData["streamers"] = {}#{twitch.getGameStreams("League of Legends")}
+	saveCacheDef(initData)
 
 #update methods take what is requested to update, and the new information for it
 #adds timestamp information
@@ -182,8 +224,13 @@ def trimCache():
 def test():
 	updateStreamer("Emorelleum",{"url":"www.spleen.com","title":"Viktor epic fail"})
 	updateNews("Blah", {"Art 1":"la"})
+	#extractRedditData()
+	extractSummoner('CloudRush')
+	#extractStreams()
 	saveCache()
 
-trimCache()
+#setupDatabase()
+test()
+#trimCache()
 #don't uncomment this unless you want to reset the database
 #setupDatabase()
