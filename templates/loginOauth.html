@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" type="text/css" />
+<title>The Fountain - Login</title>
+</head>
+<body>
+<div id="wrap">
+  <div id="header">
+    <h1 id="logo">The<span class="yellow">Fountain</span></h1>
+    <h2 id="slogan">Working Slogan...</h2>
+    <div id="menu">
+      <ul>
+        <li><a href="/register">Register</a></li>
+      </ul>
+    </div>
+  </div>
+  <div id="content-wrap">
+      <center><p><h1>Login With Google Account</h1>
+        <form method="POST" action="/loginOauth">
+          Username: <input type="text" id="username" name="username"></br></br>
+          Password: <input type="password" id="password" name="password"></br></br>
+          <input type="submit" value="Login" />
+           {% if error != None %}<p></p><span style="color:red;"><b>{{ error }}</b></span>{% endif %}</p></p>
+        </form>
+      </p>
+  </div>
+<div id="footer-wrap">
+  <div class="footer-left">
+    <p class="align-left"> &copy; 2006 <strong>The Fountain</strong> | Design by <a href="http://www.styleshout.com/">styleshout</a> | Valid <a href="http://validator.w3.org/check/referer">XHTML</a> | <a href="http://jigsaw.w3.org/css-validator/check/referer">CSS</a> </p>
+  </div>
+  <div class="footer-right">
+    <p class="align-right"> <a href="#">Home</a>&nbsp;|&nbsp; <a href="#">SiteMap</a>&nbsp;|&nbsp; <a href="#">RSS Feed</a> </p>
+  </div>
+</div>
+</body>
+</html>

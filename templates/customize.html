@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" type="text/css" />
+<title>The Fountain</title>
+</head>
+<body>
+<div id="wrap">
+  <div id="header">
+    <h1 id="logo"><a href="index.html">The<span class="yellow">Fountain</span></a></h1>
+    <h2 id="slogan">Put your site slogan here...</h2>
+    <div id="menu">
+      <ul>
+        <li><a href="#">Statistics</a></li>
+        <li><a href="#">Streams</a></li>
+        <li><a href="#">News</a></li>
+        <li><a href="customize.html">Customize</a></li>
+        <li><a href="login.html">Logout</a></li>
+      </ul>
+    </div>
+  </div>
+  <div id="content-wrap">
+    <center>
+      <div id="design">
+        <h1>Design Your Experience</h1>
+        <form name="customize" method="post" action="/blank">
+            <p>
+              Favorite Subreddits: <select name="favSubreddits">
+                <option value="subredditName">Subreddit Name</option>
+              </select>
+            </p>
+            <p>
+              Favorite Streamers: <input type="text" id= "favStreamers" name="favStreamers">
+            </p>
+            <p>
+              Follow A Summoner: <input type="text" id = "followSummoner" name="followSummoner">
+            </p>
+            <p>
+              <input type="radio" name="viewStreams" value="viewStreams" > View Streams on Homepage
+            </p>
+            <p>
+              <input type="radio" name="viewNews" value="viewNews" > View News on Homepage
+            </p>
+            <p>
+              <input type="radio" name="viewStats" value="viewStats" > View Statistics on Homepage
+            </p></br>
+            <input type="submit" value="Apply Changes" /></br>
+        </form>
+      </div>
+      <div id="remove">
+        <form name="remove" method="post" action="/blank">
+            <h3>Your Favorite Subreddits</h3>
+            <p><select name="favSubreddits">
+                <option value="subredditName">Subreddit Name</option>
+            </select></br></p>
+            <input type="submit" value="Remove" />
+        </form>
+      </div>
+    </center>
+    </div>
+  </div>
+</div>
+</body>
+</html>

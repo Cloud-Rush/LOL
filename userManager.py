@@ -18,10 +18,10 @@ def isValid(candidate):
 def checkLogin(username, password):
 	hashy = sha256_crypt.encrypt(password)
 	if username not in data:
-		return "Error: No record of the account"
+		return "Error: No record of the account1"
 	if sha256_crypt.verify(password, data[username]["passcode"]):
 		return "check successful"
-	return "Error: No record of the account"
+	return "Error: No record of the account2"
 
 def registerLogin(username, password):
 	if username in data:
@@ -107,5 +107,5 @@ def test():
 	registerLogin("oola","poinsetta")
 	print getNews("El spleeno")
 
-test()
+#test()
 saveUserData()
