@@ -1,5 +1,6 @@
 import json
 import time
+import praw
 from riotwatcher import Riotwatcher
 from riotwatcher import EUROPE_WEST
 from riotwatcher import EUROPE_NORDIC_EAST
@@ -15,7 +16,12 @@ from twitch import *
 
 
 riot = RiotWatcher('24d89b10-e6ee-469a-91bd-f5e2d15c9e31')
-
+twitch = TwitchTV()
+reddit = praw.Reddit(user_agent = 'TheFountain by /u/tstarrs')
+submissions = reddit.get_subreddit('leagueoflegends').get_top(limit = 10)
+submissions2 = reddit.get_subreddit('summonerschool').get_top(limit = 10)
+submissions3 = reddit.get_subreddit('loleventvods').get_top(limit = 10)
+allSubmissions = (submissions + submissions2 + submissions3)
 
 cacheFile = open("cacheDatabase.json")
 cacheData = json.load(cacheFile)
@@ -42,10 +48,10 @@ def saveCache():
 #this will reset the database
 def setupDatabase():
 	initData = {}
-	initData["champions"] = {}
-	initData["news"] = {}
+	initData["champions"] = {riot.get_all_champions()}
+	initData["news"] = {allSubmissions}
 	initData["summoners"] = {}
-	initData["streamers"] = {}
+	initData["streamers"] = {twitch.getGameStreams("League of Legends")}
 	saveCache(initData)
 
 #update methods take what is requested to update, and the new information for it
@@ -102,7 +108,7 @@ def updateSummoner(name,info):
 #returns {} if no ifo exists, or if the data is marked as stale
 def getChampionInfo(name):
 	if name in cacheData["champions"] and cacheData["champions"][name]["stale"] == False:
-		return riot.get_all_champions()#cacheData["champions"][name]["info"]
+		return cacheData["champions"][name]["info"]
 	else:
 		return {}
 
