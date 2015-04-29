@@ -91,7 +91,7 @@ def extractStreams():
 	for key in infor:
 		updateStreamer(key['channel']['name'],key)
 
-def extractRedditData():
+def extractiAllRedditData():
 	submissions = reddit.get_subreddit('leagueoflegends').get_top(limit = 10)
 	submissions2 = reddit.get_subreddit('summonerschool').get_top(limit = 10)
 	submissions3 = reddit.get_subreddit('loleventvods').get_top(limit = 10)
@@ -107,7 +107,14 @@ def extractRedditData():
 	for x in submissions3:
 		vred.append(str(x))
 	updateNews('loleventvods',vred)
-#used for starting a database from scratch
+
+def extractRedditData(redditName):
+	submissions = reddit.get_subreddit(redditName).get_top(limit = 10)
+	lolred = []
+	for x in submissions:
+		lolred.append(str(x))
+	updateNews(redditName,lolred)#used for starting a database from scratch
+
 #this will reset the database
 def setupDatabase():
 	initData = {}
@@ -178,40 +185,48 @@ def updateSummoner(name,info):
 #get basic data
 #returns {} if no ifo exists, or if the data is marked as stale
 def getChampionInfo(name):
-	if name in cacheData["champions"] and cacheData["champions"][name]["stale"] == False:
-		cacheMutex.acquire()
-		ret = copy.deepcopy(cacheData["champions"][name]["info"])
-		cacheMutex.release()
-		return ret
-	else:
-		return {}
-
+	if name not in cacheData["champions"] or cacheData["champions"][name]["stale"] == True:
+		pass:
+		#extract summoner info	
+	cacheMutex.acquire()
+	ret = copy.deepcopy(cacheData["champions"][name]["info"])
+	cacheMutex.release()
+	return ret
+	
 def getSummonerInfo(name):
-	if name in cacheData["summoners"] and cacheData["summoners"][name]["stale"] == False:
-		cacheMutex.acquire()
-		ret = copy.deepcopy(cacheData["summoners"][name]["info"])
-		cacheMutex.release()
-		return ret
-	else:
-		return {}
+	if name not in cacheData["summoners"] or cacheData["summoners"][name]["stale"] == True:
+		try:
+			extractSummoner(name)
+		except:
+			return "The operation could not be completed"
+	cacheMutex.acquire()
+	ret = copy.deepcopy(cacheData["summoners"][name]["info"])
+	cacheMutex.release()
+	return ret
 
 def getNewsInfo(name):
-	if name in cacheData["news"] and cacheData["news"][name]["stale"] == False:
-		cacheMutex.acuire()
-		ret = copy.deepcopy(cacheData["news"][name]["info"])
-		cacheMutex.release()
-		return ret
-	else:
-		return {}
+	if name not in cacheData["news"] or cacheData["news"][name]["stale"] == True:
+		try:
+			extractRedditData(name)
+		except:
+			return "the operation could not be completed"
+	cacheMutex.acuire()
+	ret = copy.deepcopy(cacheData["news"][name]["info"])
+	cacheMutex.release()
+	return ret
 
 def getStreamerInfo(name):
-	if name in cacheData["streamers"] and cacheData["streamers"][name]["stale"] == False:
-		cacheMutex.acquire()
-		ret = copy.deepcopy(cacheData["streamers"][name]["info"])
-		cacheMutex.release()
-		return ret
-	else:
-		return {}
+	if name not in cacheData["streamers"] or cacheData["streamers"][name]["stale"] == True:
+		try:
+			extractStreams()
+		except:
+			return "The operation could not be completed"
+	if name not in cacheData["streamers"]:
+		return "The streamer is not playing LoL at the moment"
+	cacheMutex.acquire()
+	ret = copy.deepcopy(cacheData["streamers"][name]["info"])
+	cacheMutex.release()
+	return ret
 
 
 #trim the database, mark items as stale
