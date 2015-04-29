@@ -3,6 +3,9 @@ import requests
 import json
 import time
 import praw
+import time
+import copy
+import threading
 from riotwatcher import RiotWatcher
 from riotwatcher import EUROPE_WEST
 from riotwatcher import EUROPE_NORDIC_EAST
@@ -16,6 +19,7 @@ from riotwatcher import RUSSIA
 from riotwatcher import TURKEY
 from twitch import *
 
+cacheMutex = threading.Lock()
 
 riot = RiotWatcher('24d89b10-e6ee-469a-91bd-f5e2d15c9e31')
 twitch = TwitchTV()
@@ -41,10 +45,27 @@ def saveCacheDef(saveData):
 	saveFile.close()
 
 def saveCache():
-	saveFile = open("cacheDatabase.json","w")
+	try:
+		saveFile = open("cacheDatabase.json","w")
+	except:
+		print "error attempting to save cache"
+		return
+	cacheMutex.acquire()
 	json.dump(cacheData,saveFile)
 	saveFile.close()
+	cacheMutex.release()
 
+
+def saveCache2():
+	try:
+		saveFile = open("cacheDatabase2.json","w")
+	except:
+		print "error attempting to save cache"
+		return
+	cacheMutex.acquire()
+	json.dump(cacheData,saveFile)
+	saveFile.close()
+	cacheMutex.release()
 
 def extractSummoner(sumName):
 	summer = riot.get_summoner(name=sumName)
@@ -104,11 +125,13 @@ def updateChampion(name,info):
 		cacheData["champions"][name]["info"] = info
 		cacheData["champions"][name]["stale"] = False
 	else:
+		cacheMutex.acquire()
 		cacheData["champions"][name] = {}
 		cacheData["champions"][name]["time"] = time.time()
 		cacheData["champions"][name]["info"] = info
 		cacheData["champions"][name]["stale"] = False
-	saveCache()
+		cacheMutex.release()
+	#saveCache()
 
 def updateNews(name,info):
 	if name in cacheData["news"]:
@@ -116,11 +139,13 @@ def updateNews(name,info):
 		cacheData["news"][name]["info"] = info
 		cacheData["news"][name]["stale"] = False
 	else:
+		cacheMutex.acquire()
 		cacheData["news"][name] = {}
 		cacheData["news"][name]["time"] = time.time()
 		cacheData["news"][name]["info"] = info
 		cacheData["news"][name]["stale"] = False
-	saveCache()
+		cacheMutex.release()
+	#saveCache()
 
 def updateStreamer(name,info):
 	if name in cacheData["streamers"]:
@@ -128,11 +153,13 @@ def updateStreamer(name,info):
 		cacheData["streamers"][name]["info"] = info
 		cacheData["streamers"][name]["stale"] = False
 	else:
+		cacheMuetex.acquire()
 		cacheData["streamers"][name] = {}
 		cacheData["streamers"][name]["time"] = time.time()
 		cacheData["streamers"][name]["info"] = info
 		cacheData["streamers"][name]["stale"] = False
-	saveCache()
+		cacheMutex.release()
+	#saveCache()
 	
 def updateSummoner(name,info):
 	if name in cacheData["summoners"]:
@@ -140,35 +167,49 @@ def updateSummoner(name,info):
 		cacheData["summoners"][name]["info"] = info
 		cacheData["summoners"][name]["stale"] = False
 	else:
+		cacheMutex.acquire()
 		cacheData["summoners"][name] = {}
 		cacheData["summoners"][name]["time"] = time.time()
 		cacheData["summoners"][name]["info"] = info
 		cacheData["summoners"][name]["stale"] = False
-	saveCache()
+		cacheMutex.release()
+	#saveCache()
 
 #get basic data
 #returns {} if no ifo exists, or if the data is marked as stale
 def getChampionInfo(name):
 	if name in cacheData["champions"] and cacheData["champions"][name]["stale"] == False:
-		return cacheData["champions"][name]["info"]
+		cacheMutex.acquire()
+		ret = copy.deepcopy(cacheData["champions"][name]["info"])
+		cacheMutex.release()
+		return ret
 	else:
 		return {}
 
 def getSummonerInfo(name):
 	if name in cacheData["summoners"] and cacheData["summoners"][name]["stale"] == False:
-		return cacheData["summoners"][name]["info"]
+		cacheMutex.acquire()
+		ret = copy.deepcopy(cacheData["summoners"][name]["info"])
+		cacheMutex.release()
+		return ret
 	else:
 		return {}
 
 def getNewsInfo(name):
 	if name in cacheData["news"] and cacheData["news"][name]["stale"] == False:
-		return cacheData["news"][name]["info"]
+		cacheMutex.acuire()
+		ret = copy.deepcopy(cacheData["news"][name]["info"])
+		cacheMutex.release()
+		return ret
 	else:
 		return {}
 
 def getStreamerInfo(name):
 	if name in cacheData["streamers"] and cacheData["streamers"][name]["stale"] == False:
-		return cacheData["streamers"][name]["info"]
+		cacheMutex.acquire()
+		ret = copy.deepcopy(cacheData["streamers"][name]["info"])
+		cacheMutex.release()
+		return ret
 	else:
 		return {}
 
@@ -211,6 +252,7 @@ def trimCache():
 			else:
 				 prunableChampionKeys.append(name)
 	#delete the elements marked for deletion
+	cacheMutex.acquire()
 	for pruner in prunableSummonerKeys:
 		del cacheData["summoners"][pruner]
 	for pruner in prunableStreamerKeys:
@@ -219,17 +261,28 @@ def trimCache():
 		del cacheData["news"][pruner]
 	for pruner in prunableChampionKeys:
 		del cacheData["champions"][pruner]
+	cacheMutex.release()
 	saveCache()
+
+def upkeep():
+	while True:
+		time.sleep(300)
+		saveCache()
+		time.sleep(300)
+		saveCache2()
 
 def test():
 	updateStreamer("Emorelleum",{"url":"www.spleen.com","title":"Viktor epic fail"})
 	updateNews("Blah", {"Art 1":"la"})
 	#extractRedditData()
 	extractSummoner('CloudRush')
+	extractSummoner('Taikohn')
 	#extractStreams()
 	saveCache()
 
 #setupDatabase()
+upkeepThread = threading.Thread(target = upkeep)
+upkeepThread.start()
 test()
 #trimCache()
 #don't uncomment this unless you want to reset the database
